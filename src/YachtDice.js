@@ -9,7 +9,7 @@ import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLigh
 
 RectAreaLightUniformsLib.init()
 
-const makeUrl = file => `https://raw.githubusercontent.com/flowers1225/threejs-earth/master/src/img/${file}.jpg`
+const makeUrl = file => `https://raw.githubusercontent.com/xpekfdls/Yacht-Dice-React/master/src/assets/${file}.png`
 
 const useStyles = makeStyles({
   canvas: {
@@ -30,16 +30,14 @@ function Cube(props) {
   const [ref] = useBox(() => ({ mass: 5, material:{friction:10, restitution:0.4}, position: [0, 5, 0], ...props }))
   
   console.log("Hello");
-  const [texture] = useLoader(THREE.TextureLoader, [
-    'https://github.githubassets.com/images/modules/logos_page/GitHub-Logo.png'
+  var [textureCube] = useLoader(THREE.TextureLoader, [
+    makeUrl('1'),  
   ])
-
-  console.log([texture]);
 
   return (
     <mesh receiveShadow castShadow ref={ref}>
       <boxBufferGeometry attach="geometry" />
-      <meshStandardMaterial attach="material" map={texture} />
+      <meshBasicMaterial attach="material" map={textureCube} color={"white"}/>
     </mesh>
   )
 }
