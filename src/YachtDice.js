@@ -1,10 +1,10 @@
 import ReactDOM from 'react-dom'
-import React, { useRef, useState, useMemo } from 'react'
+import React, { useRef, useState, useMemo, useEffect } from 'react'
 import { Canvas, useFrame, useLoader } from 'react-three-fiber'
 import { makeStyles } from '@material-ui/core/styles';
 import { Physics, usePlane, useBox } from 'use-cannon'
 import * as THREE from "three";
-
+import niceColors from 'nice-color-palettes'
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib'
 
 RectAreaLightUniformsLib.init()
@@ -16,20 +16,21 @@ const useStyles = makeStyles({
   },
 });
 
-function Plane(props) {
-  const [ref] = usePlane(() => ({ rotation: [-Math.PI / 2, 0, 0], ...props }))
+function Plane({ color, ...props }) {
+  const [ref] = usePlane(() => ({ material:{restitution:0.1}, ...props }))
   return (
     <mesh ref={ref} receiveShadow>
-      <planeBufferGeometry attach="geometry" args={[100, 100]} />
-      <shadowMaterial attach="material" color="#171717" />
+      <planeBufferGeometry attach="geometry" args={[1000, 1000]} />
+      <meshPhongMaterial attach="material" color={color} />
     </mesh>
   )
 }
 
 function Cube(props) {
-  const [ref] = useBox(() => ({ mass: 5, material:{friction:10, restitution:0.4}, position: [0, 5, 0], ...props }))
+  const [ref, api] = useBox(() => ({ mass: 5, material:{friction:10, restitution:1}, 
+    position: [Math.random()*3,  Math.random(), Math.random()*10],
+    rotation: [Math.random() *2, Math.random() * 2, Math.random() *2], ...props }))
   
-  console.log("Hello");
   var [textureCube] = useLoader(THREE.TextureLoader, [
     makeUrl('1'),  
   ])
@@ -37,51 +38,40 @@ function Cube(props) {
   return (
     <mesh receiveShadow castShadow ref={ref}>
       <boxBufferGeometry attach="geometry" />
-      <meshBasicMaterial attach="material" map={textureCube} color={"white"}/>
+      <meshBasicMaterial attach="material" map={textureCube}/>
     </mesh>
   )
-}
-
-function Edge(props){
-  const geom = useMemo(() => new THREE.DodecahedronBufferGeometry(1, 1))
-  const [ref] = useBox(() => ({ mass: 5, material:{friction:10, restitution:0.4}, position: [0, 10, 0], ...props }))
-
-  return(
-      <lineSegments>
-        <edgesGeometry attach="geometry" args={[geom]} />
-        <lineBasicMaterial color="red" attach="material" />
-      </lineSegments>
-    )
 }
 
 export default function YachtDice() {
   const classes = useStyles();
     return(
-      <Canvas shadowMap sRGB gl={{ alpha: false }} camera={{ position: [-3, 10, 5], fov: 70 }}>
+      <Canvas shadowMap sRGB gl={{ alpha: false }} camera={{ position: [0, -12, 16] }}>
         <color attach="background" args={['#282c34']} />
-        <ambientLight color={'#cccccc'} />
-        <ambientLight color={'#cccccc'} />
-        <Physics>
-          <Plane />
+        <hemisphereLight intensity={0.35} />
+        <spotLight
+          position={[30, 0, 30]}
+          angle={0.3}
+          penumbra={1}
+          intensity={2}
+          castShadow
+          shadow-mapSize-width={256}
+          shadow-mapSize-height={256}
+        />
+        <Physics gravity={[0, 0, -30]}>
           <Cube />
-          <Cube position={[0, 10, -2]} />
-          <Cube position={[0, 20, -2]} />
-          <Edge />
+          <Cube />
+          <Cube />
+          <Cube />
+          <Cube />
+          <Plane color={niceColors[17][4]} />
+          <Plane color={niceColors[17][1]} position={[-6, 0, 0]} rotation={[0, 0.9, 0]} />
+          <Plane color={niceColors[17][2]} position={[6, 0, 0]} rotation={[0, -0.9, 0]} />
+          <Plane color={niceColors[17][3]} position={[0, 6, 0]} rotation={[0.9, 0, 0]} />
+          <Plane color={niceColors[17][0]} position={[0, -6, 0]} rotation={[-0.9, 0, 0]} />
+          
         </Physics>
       </Canvas>
     )
 }
 
-
-        // <hemisphereLight intensity={0.35} />
-        // <spotLight position={[10, 10, 10]} angle={0.3} penumbra={1} intensity={2} castShadow />
-    // const ambientLight = new THREE.AmbientLight(0xcccccc);
-    // this.scene.add(ambientLight);
-
-    // const foreLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    // foreLight.position.set(5, 5, 20);
-    // this.scene.add(foreLight);
-
-    // const backLight = new THREE.DirectionalLight(0xffffff, 1);
-    // backLight.position.set(-5, -5, -10);
-    // this.scene.add(backLight);
