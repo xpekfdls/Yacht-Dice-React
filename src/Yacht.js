@@ -28,6 +28,7 @@ function Yacht(props) {
 					<YachtDice></YachtDice>
 				</Grid>
 
+
 			</Grid>
 		</div>
 	);}
